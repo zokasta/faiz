@@ -5,6 +5,7 @@ import shutil
 import subprocess
 import signal
 import time
+from ..utils.checker import isImage  # ✅ Import isImage
 
 OUTPUT_DIR = "converted_avif"
 FAILED_DIR = "failed_avif"
@@ -44,6 +45,12 @@ def convert_to_avif(input_path, output_path=None, batch_mode=False, retries=3, i
     global stats
 
     if should_stop:
+        return
+
+    # ✅ Check if file is an image
+    if not isImage(input_path):
+        print(f"[{index}/{total}] ⏩ Skipped (not an image): {input_path}")
+        stats["skipped"] += 1
         return
 
     if not os.path.exists(input_path):
@@ -143,8 +150,8 @@ def print_summary():
 
 
 if __name__ == "__main__":
-    signal.signal(signal.SIGINT, signal_handler)  # Ctrl+C
-    signal.signal(signal.SIGTERM, signal_handler)  # kill/terminate
+    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGTERM, signal_handler)
 
     if len(sys.argv) < 2:
         print("Usage: python convert_to_avif.py <image_path_or_glob_pattern>")

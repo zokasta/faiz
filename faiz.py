@@ -1,14 +1,6 @@
-import os
 import sys
-import subprocess
-import glob
-import requests
-import webbrowser
 from .utils.env.env import main as env_main
-from bs4 import BeautifulSoup
 from .utils.edge.edge import edge_main_func, edgeMobileFun
-from .utils.webp.webpcon import convert_to_webp, process_images
-from .utils.avif.avifcon import main as avif_main
 from .utils.git import main as git_main
 from .utils.qr import main as qr
 from .utils.cursor import main as cursor_main
@@ -17,10 +9,14 @@ from .utils.ssh.ssh import main as ssh_command
 from .utils.framework.react import main as setup_reactjs
 from .utils.framework.laravel import main as setup_laravel
 from .utils.search.search import main as google_search
-from .utils.webp.webpcon import main as webp_con
 
+# This is all converter imports
+from .utils.converter.webp.webpcon import main as webp_con
+from .utils.converter.avif.avifcon import main as avif_main
+from .utils.converter.jpeg.jpegcon import main as jpeg_main
+from .utils.converter.png.pngcon import main as png_main
 
-VERSION = "0.1.1"
+VERSION = "0.1.2"
 
 commands = {
     "avif": avif_main,
@@ -28,8 +24,8 @@ commands = {
     "reactjs": setup_reactjs,
     "laravel": setup_laravel,
     "search": google_search,
-    "edge": lambda args: edge_main_func(20),
-    "edge_mobile": lambda args: edgeMobileFun(20),
+    "edge": lambda args: edge_main_func(args),
+    "edge_mobile": lambda args: edgeMobileFun(args),
     "webp": webp_con,
     "git": git_main,
     "qr": qr,
@@ -38,7 +34,10 @@ commands = {
     "env": env_main,
     "version": lambda args: print(f"🛠️  Faiz Super Command Version: {VERSION}"),
     "--version": lambda args: print(f"🛠️  Faiz Super Command: {VERSION}"),
-    "list": lambda args: list_commands()
+    "list": lambda args: list_commands(),
+    "png": png_main,
+    "jpeg": jpeg_main,
+    
 }
 
 

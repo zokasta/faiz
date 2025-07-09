@@ -47,7 +47,22 @@ def perform_actions_mobile():
 
 
 
-def edge_main_func(count):
+def edge_main_func(args):
+    count = int(args[0]) if args and str(args[0]).isdigit() else 20
+    
+    switch_window()
+    
+    iterations = count  
+    
+    for i in range(iterations):
+        perform_actions()
+        print(f"Iteration {i + 1}/{iterations} completed.")
+        time.sleep(4.5)
+        pyautogui.hotkey("ctrl", "w")
+    
+    print("✅ Process completed!")
+
+    
     switch_window()
     
     iterations = count  
