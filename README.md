@@ -54,24 +54,32 @@ python setup.py install
 ### ✅ Manage Environment Variables
 
 ```bash
-faiz env set API_KEY myapikey
+faiz env set "API_KEY title" myapikey
 faiz env list
-faiz env remove API_KEY
+faiz env get "API_KEY title"
+faiz env remove "API_KEY title"
 ```
 
 ### 🖼️ Image Conversion
 
 ```bash
-faiz webp ./images/*.jpg
-faiz avif ./images/*.png
+faiz webp *
+faiz webp *.png
+faiz avif *
+faiz avif *.png
 ```
 
 ### 🔍 Quick Web Searches
 
 ```bash
 faiz search "Best AI tools"
-faiz edge "Top 10 laptops"
-faiz edge_mobile "Weather today"
+```
+
+### Auto Search for Edge Rewards
+
+```bash
+faiz edge 
+faiz edge_mobile
 ```
 
 ### 🔑 SSH Shortcuts
@@ -86,8 +94,10 @@ faiz ssh delete myserver
 ### 🐙 Git Automation
 
 ```bash
-faiz git init
-faiz git push "Initial commit"
+faiz git clone title https://github.com/zokasta/faiz.git
+faiz git run title
+faiz git make title
+faiz git list
 ```
 
 ### 📱 QR Code Generation
@@ -99,7 +109,11 @@ faiz qr "https://example.com"
 ### 🧮 File Counting
 
 ```bash
-faiz count ./my_folder
+faiz count *
+faiz count * --deep 
+faiz count "*.jpg"
+faiz count "*.pdf"
+faiz count folder
 ```
 
 ### 👟 Cursor Movement

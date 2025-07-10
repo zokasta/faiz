@@ -75,7 +75,8 @@ def edge_main_func(args):
     print("Process completed!")
 
     
-def edgeMobileFun(count):
+def edgeMobileFun(args):
+    count = int(args[0]) if args and str(args[0]).isdigit() else 20
     switch_window()
     print('this is edge mobile')
     iterations = count

@@ -1,13 +1,19 @@
 import json
 import os
 
-ENV_FILE = 'env.json'
+# Store the env.json in a fixed location:
+ENV_DIR = os.path.join(os.path.expanduser("~"), ".faiz")
+ENV_FILE = os.path.join(ENV_DIR, "env.json")
 
-# Load or create env.json
+# Load or create env.json safely
 def load_env():
+    if not os.path.exists(ENV_DIR):
+        os.makedirs(ENV_DIR)
+
     if not os.path.exists(ENV_FILE):
         with open(ENV_FILE, 'w') as f:
             json.dump({}, f, indent=4)
+
     with open(ENV_FILE, 'r') as f:
         return json.load(f)
 
@@ -26,8 +32,9 @@ def list_env():
     env = load_env()
     if not env:
         print("⚠️ No variables set.")
-    for k, v in env.items():
-        print(f"{k} = {v}")
+    else:
+        for k, v in env.items():
+            print(f"{k} = {v}")
 
 # Add or update
 def add_env(key, value):

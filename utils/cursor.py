@@ -2,7 +2,7 @@ import pyautogui
 import random
 import time
 
-def main():
+def main(args):
     print('Starting to move cursor randomly')
     screen_width, screen_height = pyautogui.size()  
     try:

@@ -5,12 +5,10 @@ import shutil
 import subprocess
 import signal
 import time
-from ..utils.checker import isImage  # ✅ Import isImage
 
 OUTPUT_DIR = "converted_avif"
 FAILED_DIR = "failed_avif"
 
-# Stats tracking
 stats = {
     "total_images": 0,
     "converted": 0,
@@ -21,7 +19,7 @@ stats = {
     "start_time": None
 }
 
-should_stop = False  # Graceful stop flag
+should_stop = False
 
 
 def format_size(bytes_size):
@@ -41,16 +39,18 @@ def ensure_dirs():
     os.makedirs(FAILED_DIR, exist_ok=True)
 
 
+def check_ffmpeg_installed():
+    try:
+        subprocess.run(["ffmpeg", "-version"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+        return True
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return False
+
+
 def convert_to_avif(input_path, output_path=None, batch_mode=False, retries=3, index=None, total=None):
     global stats
 
     if should_stop:
-        return
-
-    # ✅ Check if file is an image
-    if not isImage(input_path):
-        print(f"[{index}/{total}] ⏩ Skipped (not an image): {input_path}")
-        stats["skipped"] += 1
         return
 
     if not os.path.exists(input_path):
@@ -62,12 +62,19 @@ def convert_to_avif(input_path, output_path=None, batch_mode=False, retries=3, i
         base_name = os.path.splitext(os.path.basename(input_path))[0]
         output_path = os.path.join(OUTPUT_DIR if batch_mode else os.path.dirname(input_path), base_name + ".avif")
 
-    input_size = os.path.getsize(input_path)
-    stats["total_input_size"] += input_size
+    try:
+        input_size = os.path.getsize(input_path)
+        stats["total_input_size"] += input_size
+    except Exception as e:
+        print(f"❌ Cannot get size of {input_path}: {e}")
+        stats["skipped"] += 1
+        return
 
     attempt = 0
     while attempt < retries:
         try:
+            start_time = time.time()
+
             command = [
                 "ffmpeg",
                 "-y",
@@ -80,23 +87,28 @@ def convert_to_avif(input_path, output_path=None, batch_mode=False, retries=3, i
             subprocess.run(command, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
             if not os.path.exists(output_path):
-                raise RuntimeError("⚠️ FFmpeg ran, but output file is missing.")
+                raise RuntimeError("⚠️ FFmpeg ran but output file is missing.")
+
+            end_time = time.time()
+            time_taken = end_time - start_time
 
             output_size = os.path.getsize(output_path)
             stats["total_output_size"] += output_size
             stats["converted"] += 1
 
             reduction = 100 * (input_size - output_size) / input_size if input_size else 0
-            print(f"[{index}/{total}] ✅ Converted: {os.path.basename(input_path)}")
+            name_display = f"[{index}/{total}] " if batch_mode and index and total else ""
+            print(f"{name_display}✅ Converted: {os.path.basename(input_path)}")
             print(f"    ⏹ Before:  {format_size(input_size)}")
             print(f"    🟢 After:   {format_size(output_size)}")
-            print(f"    📉 Reduced: {reduction:.2f}%\n")
+            print(f"    📉 Reduced: {reduction:.2f}%")
+            print(f"    ⏳ Time Taken: {time_taken:.2f} seconds\n")
             return
         except subprocess.CalledProcessError:
             attempt += 1
             print(f"⚠️ Attempt {attempt} failed for {input_path}")
         except Exception as e:
-            print(f"❌ Unexpected error: {e}")
+            print(f"❌ Unexpected error for {input_path}: {e}")
             break
 
     print(f"❌ Giving up on: {input_path}")
@@ -149,25 +161,70 @@ def print_summary():
     print("===========================\n")
 
 
+def parse_arguments(args):
+    if not args:
+        print("Usage: faiz avif <input_image_or_pattern> [output_image]")
+        return None
+    return args
+
+
+def find_images_from_pattern(pattern):
+    image_files = glob.glob(pattern)
+    if not image_files:
+        print(f"❌ No matching files found for pattern: {pattern}")
+    return image_files
+
+
+def handle_batch_conversion(image_files):
+    if not image_files:
+        print("❌ No images to process.")
+        return
+    print(f"🔄 Processing {len(image_files)} images...")
+    process_images(image_files)
+
+
+def handle_single_conversion(input_path, output_path=None):
+    stats["start_time"] = time.time()
+    ensure_dirs()
+    convert_to_avif(input_path, output_path, batch_mode=False, index=1, total=1)
+    print_summary()
+
+
+def main(args):
+    try:
+        if not check_ffmpeg_installed():
+            print("❌ FFmpeg is not installed or not found in your system PATH.")
+            print("➡️  Please install FFmpeg from https://ffmpeg.org/download.html")
+            return
+
+        parsed_args = parse_arguments(args)
+        if not parsed_args:
+            return
+
+        if len(parsed_args) == 1 and "*" in parsed_args[0]:
+            pattern = parsed_args[0]
+            images = find_images_from_pattern(pattern)
+            if images:
+                handle_batch_conversion(images)
+
+        elif len(parsed_args) > 1 and all(os.path.isfile(a) for a in parsed_args):
+            handle_batch_conversion(parsed_args)
+
+        else:
+            input_path = parsed_args[0]
+            output_path = parsed_args[1] if len(parsed_args) > 1 else None
+            handle_single_conversion(input_path, output_path)
+
+    except KeyboardInterrupt:
+        print("\n🛑 Interrupted by user.")
+        print_summary()
+    except Exception as e:
+        print("❌ An unexpected error occurred in 'faiz avif' command.")
+        print(f"🔍 Error: {e}")
+        print("ℹ️ Please check the command syntax or file paths.")
+
+
 if __name__ == "__main__":
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
-
-    if len(sys.argv) < 2:
-        print("Usage: python convert_to_avif.py <image_path_or_glob_pattern>")
-    else:
-        input_pattern = sys.argv[1]
-
-        if "*" in input_pattern:
-            image_files = glob.glob(input_pattern)
-            if not image_files:
-                print("❌ No matching files found.")
-            else:
-                print(f"🔄 Processing {len(image_files)} images...")
-                process_images(image_files)
-        else:
-            input_path = input_pattern
-            output_path = sys.argv[2] if len(sys.argv) > 2 else None
-            stats["start_time"] = time.time()
-            convert_to_avif(input_path, output_path, batch_mode=False, index=1, total=1)
-            print_summary()
+    main(sys.argv[1:])

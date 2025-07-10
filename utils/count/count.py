@@ -1,65 +1,125 @@
 import os
 import glob
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
+def human_readable_size(size_bytes):
+    for unit in ['B', 'KB', 'MB', 'GB', 'TB']:
+        if size_bytes < 1024:
+            return f"{size_bytes:.2f} {unit}"
+        size_bytes /= 1024
+    return f"{size_bytes:.2f} PB"
+
+def process_file(path, categories):
+    name = os.path.basename(path)
+    ext = os.path.splitext(name.lower())[1]
+    try:
+        size = os.path.getsize(path)
+    except:
+        size = 0  # Handle unreadable files safely
+
+    for cat, exts in categories.items():
+        if ext in exts:
+            return (cat, size, name)
+    return ("Other Files", size, name)
 
 def main(args):
-    if not args or args[0] not in {"*", "type"}:
-        print("Usage:\n  faiz count * [--index]\n  faiz count type <pattern>")
+    if not args:
+        print("Usage:\n  faiz count * [--index] [--deep]\n  faiz count <pattern>\n  faiz count folder")
         return
 
     show_index = "--index" in args
+    deep_search = "--deep" in args
 
-    if args[0] == "*":
-        categories = {
-            "Images": {".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff", ".webp", ".avif"},
-            "Audio": {".mp3", ".wav", ".flac", ".aac", ".ogg", ".m4a"},
-            "Video": {".mp4", ".avi", ".mkv", ".mov", ".flv", ".wmv"},
-            "Documents": {".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".txt", ".md"},
-        }
+    filtered_args = [arg for arg in args if arg not in {"--index", "--deep"}]
+    if not filtered_args:
+        print("❌ Missing arguments.\nUsage:\n  faiz count * [--index] [--deep]\n  faiz count <pattern>\n  faiz count folder")
+        return
 
+    command = filtered_args[0]
+
+    categories = {
+        "Images": {".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff", ".webp", ".avif"},
+        "Audio": {".mp3", ".wav", ".flac", ".aac", ".ogg", ".m4a"},
+        "Video": {".mp4", ".avi", ".mkv", ".mov", ".flv", ".wmv"},
+        "Documents": {".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".txt", ".md"},
+    }
+
+    if command == "folder":
+        search_path = "**" if deep_search else "."
+        folder_count = sum(1 for root, dirs, files in os.walk(search_path) for d in dirs)
+        print(f"📁 Total folders{' (deep search)' if deep_search else ''}: {folder_count}")
+        return
+
+    if command == "*":
         counts = {name: 0 for name in categories}
+        sizes = {name: 0 for name in categories}
         counts["Other Files"] = 0
+        sizes["Other Files"] = 0
         folder_count = 0
-
         indexed_list = []
 
-        for idx, entry in enumerate(os.scandir(), start=1):
-            name = entry.name
-            if entry.is_dir():
-                folder_count += 1
-                if show_index:
-                    indexed_list.append(f"{idx}. 📁 {name}/")
-            elif entry.is_file():
-                ext = os.path.splitext(name.lower())[1]
-                for cat, exts in categories.items():
-                    if ext in exts:
-                        counts[cat] += 1
-                        break
-                else:
-                    counts["Other Files"] += 1
+        entries = []
+        if deep_search:
+            for root, dirs, files in os.walk("."):
+                for d in dirs:
+                    entries.append(os.path.join(root, d))
+                for f in files:
+                    entries.append(os.path.join(root, f))
+        else:
+            entries = [entry.path for entry in os.scandir()]
 
-                if show_index:
-                    indexed_list.append(f"{idx}. 📄 {name}")
+        files = [e for e in entries if os.path.isfile(e)]
+        folders = [e for e in entries if os.path.isdir(e)]
+        folder_count = len(folders)
+
+        with ThreadPoolExecutor() as executor:
+            futures = {executor.submit(process_file, path, categories): path for path in files}
+            for idx, future in enumerate(as_completed(futures), start=1):
+                try:
+                    cat, size, name = future.result()
+                    counts[cat] += 1
+                    sizes[cat] += size
+                    if show_index:
+                        indexed_list.append(f"{idx}. 📄 {name} — {human_readable_size(size)}")
+                except Exception:
+                    continue
 
         print(f"📁 Folders: {folder_count}")
+        total_size = sum(sizes.values())
         for cat, num in counts.items():
-            print(f"📄 {cat}: {num}")
+            size = sizes[cat]
+            print(f"📄 {cat}: {num} files — {human_readable_size(size)}")
 
         total_items = folder_count + sum(counts.values())
-        print(f"\n🔢 Total entries (files + folders): {total_items}")
+        print(f"\n🔢 Total entries: {total_items}")
+        print(f"💾 Total size: {human_readable_size(total_size)}")
 
         if show_index and indexed_list:
-            print("\n📝 Index of Files and Folders:")
+            print("\n📝 Index:")
             print("-" * 30)
             for line in indexed_list:
                 print(line)
+        return
 
-    elif args[0] == "type" and len(args) > 1:
-        pattern = args[1]
-        matching = glob.glob(pattern)
-        file_count = sum(1 for p in matching if os.path.isfile(p))
-        folder_count = sum(1 for p in matching if os.path.isdir(p))
-        print(f"📂 Total matching entries for '{pattern}': {len(matching)}")
-        print(f"   - Files:   {file_count}")
-        print(f"   - Folders: {folder_count}")
-    else:
-        print("❌ Invalid usage.\nUse:\n  faiz count * [--index]\n  faiz count type <pattern>")
+    # Handle pattern search
+    pattern = command
+    search_pattern = f"**/{pattern}" if deep_search else pattern
+    matching = glob.glob(search_pattern, recursive=deep_search)
+
+    files = [p for p in matching if os.path.isfile(p)]
+    folders = [p for p in matching if os.path.isdir(p)]
+
+    total_size = 0
+    with ThreadPoolExecutor() as executor:
+        futures = {executor.submit(os.path.getsize, f): f for f in files}
+        for future in as_completed(futures):
+            try:
+                total_size += future.result()
+            except:
+                continue
+
+    print(f"📂 Total matching entries for '{pattern}'{' (deep search)' if deep_search else ''}: {len(matching)}")
+    print(f"   - Files:   {len(files)}")
+    print(f"   - Folders: {len(folders)}")
+    print(f"💾 Total size of matching files: {human_readable_size(total_size)}")
+
