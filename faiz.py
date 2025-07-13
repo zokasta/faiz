@@ -17,8 +17,8 @@ from .utils.converter.avif.avifcon import main as avif_main
 from .utils.converter.jpeg.jpegcon import main as jpeg_main
 from .utils.converter.png.pngcon import main as png_main
 # from .utils.hacker.hacker import main as hacker_main
-
-VERSION = "0.1.2"
+from .utils.pdf.pdf import main as pdf_main
+VERSION = "0.1.3"
 
 commands = {
     "avif": avif_main,
@@ -34,11 +34,10 @@ commands = {
     "cursor": cursor_main,
     "count": count_files_command,
     "env": env_main,
-    "version": lambda args: print(f"🛠️  Faiz Super Command Version: {VERSION}"),
     "--version": lambda args: print(f"🛠️  Faiz Super Command: {VERSION}"),
-    "list": lambda args: list_commands(),
     "png": png_main,
     "jpeg": jpeg_main,
+    "pdf":pdf_main
 }
 
 
@@ -52,8 +51,7 @@ def list_commands():
 
 
 def invalid_command(args):
-    print("❌ Invalid subcommand.")
-    print("👉 Run `faiz list` to see all available commands.")
+    list_commands()
 
 
 def main():

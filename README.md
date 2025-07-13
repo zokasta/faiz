@@ -2,7 +2,7 @@
 
 **faiz** is a powerful **command-line utility** designed to streamline your daily tasks—whether you're a developer, tech enthusiast, sysadmin, or just someone who loves automation.
 
-From image conversions and QR code generation to SSH management and project scaffolding, **faiz** puts everything you need right at your fingertips in one clean, easy-to-use command.
+From image conversions and QR code generation to SSH management, project scaffolding, and comprehensive PDF operations, **faiz** puts everything you need right at your fingertips in one clean, easy-to-use command.
 
 ✅ Fast • 🗭️ Secure • 🔧 Modular • 🌐 Internet-Ready • ⚡ Productivity-Boosting
 
@@ -37,15 +37,16 @@ python setup.py install
 | Feature                | Description                                                  |
 | ---------------------- | ------------------------------------------------------------ |
 | ⚙️ Environment Manager | Manage and edit `.env` files effortlessly                    |
-| 🖼️ Image Converter    | Convert images to **WebP** and **AVIF** formats easily       |
+| 🖼️ Image Converter    | Convert images to **WebP**, **AVIF**, **JPEG**, **PNG**      |
 | 🔍 Web Search          | Search instantly via Google or Microsoft Edge                |
 | 🔑 SSH Manager         | Save, list, and connect to SSH profiles quickly              |
 | 🐙 Git Automation      | Perform common Git operations faster                         |
 | 📱 QR Code Generator   | Generate QR codes from text, links, or data                  |
-| 🧮 File Type Counter   | Count files by extension in any directory                    |
+| 🧮 File Type Counter   | Count files by extension and size in any directory           |
 | 👟 Cursor Fun          | Move mouse cursor randomly for fun or screen awake scenarios |
 | ⚛️ React.js Setup      | Scaffold basic React.js projects quickly                     |
 | 🄻 Laravel Setup       | Bootstrap Laravel PHP projects in seconds                    |
+| 📄 **PDF Suite**       | Lock, unlock, merge, split, compress, rotate, watermark PDFs |
 
 ---
 
@@ -64,22 +65,15 @@ faiz env remove "API_KEY title"
 
 ```bash
 faiz webp *
-faiz webp *.png
-faiz avif *
 faiz avif *.png
+faiz jpeg *.jpg
+faiz png *.bmp
 ```
 
 ### 🔍 Quick Web Searches
 
 ```bash
 faiz search "Best AI tools"
-```
-
-### Auto Search for Edge Rewards
-
-```bash
-faiz edge 
-faiz edge_mobile
 ```
 
 ### 🔑 SSH Shortcuts
@@ -100,70 +94,80 @@ faiz git make title
 faiz git list
 ```
 
-### 📱 QR Code Generation
-
-```bash
-faiz qr "https://example.com"
-```
-
 ### 🧮 File Counting
 
 ```bash
 faiz count *
-faiz count * --deep 
+faiz count * --deep
 faiz count "*.jpg"
-faiz count "*.pdf"
 faiz count folder
 ```
 
-### 👟 Cursor Movement
+### 📄 PDF Operations
 
 ```bash
-faiz cursor
+# Lock/Unlock
+faiz pdf lock report.pdf --password 1234
+faiz pdf unlock locked_report.pdf    # prompts for password
+
+# Merge PDFs
+faiz pdf merge a.pdf b.pdf c.pdf output.pdf
+
+# Split PDF into pages
+faiz pdf split document.pdf
+
+# Compress PDF
+faiz pdf compress large.pdf --output small.pdf
+
+# Rotate PDF pages
+faiz pdf rotate doc.pdf --angle 90 --output rotated.pdf
+
+# Add page numbers
+faiz pdf pagenum file.pdf --output numbered.pdf
 ```
+
+> 🔧 **Tip:** Run `faiz pdf` with no arguments to see full PDF usage guide.
 
 ---
 
 ## 📋 All Available Commands
 
-| Command            | Description                        |
-| ------------------ | ---------------------------------- |
-| `faiz avif`        | Convert images to AVIF             |
-| `faiz webp`        | Convert images to WebP             |
-| `faiz search`      | Google Search                      |
-| `faiz edge`        | Search in Microsoft Edge (Desktop) |
-| `faiz edge_mobile` | Search in Edge (Mobile simulation) |
-| `faiz ssh`         | SSH profile manager                |
-| `faiz git`         | Git helper                         |
-| `faiz qr`          | QR Code generator                  |
-| `faiz cursor`      | Move cursor randomly               |
-| `faiz count`       | File type counter                  |
-| `faiz env`         | Environment manager                |
-| `faiz reactjs`     | React.js scaffolding               |
-| `faiz laravel`     | Laravel scaffolding                |
-| `faiz version`     | Show version                       |
-| `faiz --version`   | Show version                       |
-| `faiz list`        | List all commands                  |
+| Command            | Description                   |
+| ------------------ | ----------------------------- |
+| `faiz avif`        | Convert to AVIF               |
+| `faiz webp`        | Convert to WebP               |
+| `faiz jpeg`        | Convert to JPEG               |
+| `faiz png`         | Convert to PNG                |
+| `faiz search`      | Web search                    |
+| `faiz edge`        | Edge desktop search           |
+| `faiz edge_mobile` | Edge mobile simulation search |
+| `faiz ssh`         | SSH profile manager           |
+| `faiz git`         | Git helper                    |
+| `faiz qr`          | QR Code generator             |
+| `faiz cursor`      | Cursor movement fun           |
+| `faiz count`       | Count files/folders and sizes |
+| `faiz env`         | Environment manager           |
+| `faiz reactjs`     | React.js scaffolding          |
+| `faiz laravel`     | Laravel scaffolding           |
+| `faiz pdf`         | Comprehensive PDF toolkit     |
+| `faiz version`     | Show version                  |
+| `faiz --version`   | Show version                  |
+| `faiz list`        | List all available commands   |
 
 ---
 
 ## 🌱 Future Feature Ideas
 
-Here are some exciting ideas planned for future versions of **faiz**:
-
-| Feature                    | Description                                         |
-| -------------------------- | --------------------------------------------------- |
-| 📄 **PDF Maker**           | Convert text or images into PDF files               |
-| 🖼️ **Multi-Type Changer** | Batch convert images between multiple formats       |
-| 📼 **Image Compressor**    | Compress images while maintaining quality           |
-| 🔍 **File Finder**         | Quickly locate files by name, size, or type         |
-| 🤖 **Mini AI Assistant**   | Simple AI for device-based text summarization, chat |
-| 🗃️ **Docker Manager**     | Manage Docker containers and images from CLI        |
-| 📝 **Markdown to HTML**    | Instant Markdown to HTML conversion                 |
-| 🎤 **Text-to-Speech**      | Convert text to spoken audio                        |
-| 💼 **Price Tracker**       | Track online product prices via command-line        |
-| 📊 **SEO Rank Checker**    | Check website ranking for keywords                  |
-| ⚡ **AI Code Generator**    | AI-assisted code snippets based on prompts          |
+| Feature                      | Description                                  |
+| ---------------------------- | -------------------------------------------- |
+| 📄 **PDF to Word/PPT/Excel** | Convert PDF to Office formats                |
+| 🛠️ **PDF OCR**              | Extract text from scanned PDFs               |
+| 🎨 **Edit PDF**              | Add text, images, shapes, annotations        |
+| 💧 **Advanced Watermark**    | Text & image watermark customization         |
+| 📐 **Crop/Redact**           | Crop margins or redact sensitive information |
+| 🌐 **HTML to PDF**           | Convert web pages to PDF                     |
+| 🩹 **Repair PDF**            | Fix corrupted or damaged PDFs                |
+| 🗃️ **PDF/A Conversion**     | Archive-standard PDF format                  |
 
 👉 Have more ideas? [Open an issue](https://github.com/zokasta/faiz/issues) or send a pull request!
 
@@ -171,7 +175,7 @@ Here are some exciting ideas planned for future versions of **faiz**:
 
 ## 💡 Contribute
 
-We welcome contributions from the community. Feel free to fork the repository, submit issues, or open pull requests here:
+We welcome contributions from the community. Feel free to fork the repository, submit issues, or open pull requests:
 
 👉 **GitHub:** [https://github.com/zokasta/faiz](https://github.com/zokasta/faiz)
 
