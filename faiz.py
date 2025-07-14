@@ -16,9 +16,11 @@ from .utils.converter.webp.webpcon import main as webp_con
 from .utils.converter.avif.avifcon import main as avif_main
 from .utils.converter.jpeg.jpegcon import main as jpeg_main
 from .utils.converter.png.pngcon import main as png_main
+
+from .utils.convert.convert import main as convert_main
 # from .utils.hacker.hacker import main as hacker_main
 from .utils.pdf.pdf import main as pdf_main
-VERSION = "0.1.3"
+VERSION = "0.1.4"
 
 commands = {
     "avif": avif_main,
@@ -37,7 +39,8 @@ commands = {
     "--version": lambda args: print(f"🛠️  Faiz Super Command: {VERSION}"),
     "png": png_main,
     "jpeg": jpeg_main,
-    "pdf":pdf_main
+    "pdf":pdf_main,
+    "convert":convert_main,
 }
 
 
@@ -51,13 +54,12 @@ def list_commands():
 
 
 def invalid_command(args):
-    list_commands()
+    print('invalid command')
 
 
 def main():
     if len(sys.argv) < 2:
-        print("⚠️  No subcommand provided.")
-        print("👉 Run `faiz list` to see available commands.")
+        list_commands()
         sys.exit(1)
 
     command = sys.argv[1].lower()
