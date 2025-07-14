@@ -1,24 +1,10 @@
 from pathlib import Path
-from .utils import prompt_password, get_output_path
+import logging
+import pikepdf
+from .utils import prompt_password, get_output_path  # ✅ Import get_output_path
 
-# --- Suppress C++ logging from pikepdf/qpdf ---
-import sys
-import os
-import contextlib
-
-@contextlib.contextmanager
-def suppress_stderr():
-    with open(os.devnull, 'w') as devnull:
-        old_stderr = sys.stderr
-        sys.stderr = devnull
-        try:
-            yield
-        finally:
-            sys.stderr = old_stderr
-
-# Suppress during pikepdf import/init
-with suppress_stderr():
-    import pikepdf
+# ✅ Suppress pikepdf INFO logs
+logging.getLogger("pikepdf").propagate = False
 
 def unlock_pdf(file_path, password=None):
     "🔓 Unlock a password-protected PDF."
@@ -28,11 +14,9 @@ def unlock_pdf(file_path, password=None):
 
     password = password or prompt_password()
     try:
-        with suppress_stderr():  # Also suppress on open (just in case)
-            pdf = pikepdf.open(file_path, password=password)
-
+        pdf = pikepdf.open(file_path, password=password)
         out_name = f"unlocked_{Path(file_path).name}"
-        out_path = get_output_path(file_path, out_name)
+        out_path = get_output_path(file_path, out_name)  # ✅ Determine correct output path
         pdf.save(out_path)
         print(f"🔓 Unlocked PDF saved as: {out_path}")
     except pikepdf._qpdf.PasswordError:

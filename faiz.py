@@ -20,7 +20,8 @@ from .utils.converter.png.pngcon import main as png_main
 from .utils.convert.convert import main as convert_main
 # from .utils.hacker.hacker import main as hacker_main
 from .utils.pdf.pdf import main as pdf_main
-VERSION = "0.1.4"
+from .utils.zip.zip import main as zip_main
+VERSION = "0.1.5"
 
 commands = {
     "avif": avif_main,
@@ -41,6 +42,7 @@ commands = {
     "jpeg": jpeg_main,
     "pdf":pdf_main,
     "convert":convert_main,
+    "zip":zip_main,
 }
 
 

@@ -1,24 +1,10 @@
 from pathlib import Path
-from .utils import prompt_password, get_output_path
+import logging
+import pikepdf
+from .utils import prompt_password, get_output_path  # ✅ Import helper
 
-# Suppress pikepdf/qpdf stderr messages
-import sys
-import os
-import contextlib
-
-@contextlib.contextmanager
-def suppress_stderr():
-    with open(os.devnull, 'w') as devnull:
-        old_stderr = sys.stderr
-        sys.stderr = devnull
-        try:
-            yield
-        finally:
-            sys.stderr = old_stderr
-
-with suppress_stderr():
-    import pikepdf
-
+# ✅ Suppress pikepdf INFO logs
+logging.getLogger("pikepdf").propagate = False
 def main(args):
     if not args:
         print("❗ Usage: lock <file.pdf> [--password pwd]")
@@ -32,12 +18,9 @@ def main(args):
         return
 
     try:
-        with suppress_stderr():
-            pdf = pikepdf.open(file)
-
+        pdf = pikepdf.open(file)
         out_name = f"locked_{Path(file).name}"
-        out_path = get_output_path(file, out_name)
-
+        out_path = get_output_path(file, out_name)  # ✅ Use helper
         pdf.save(out_path, encryption=pikepdf.Encryption(owner=pwd, user=pwd, R=4))
         print(f"🔒 Locked PDF saved as: {out_path}")
     except Exception as e:
