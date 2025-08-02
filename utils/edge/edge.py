@@ -2,9 +2,8 @@ import pyautogui
 import random
 import time
 
-
 def switch_window():
-    pyautogui.hotkey('alt','tab')
+    pyautogui.hotkey('alt', 'tab')
 
 word_list = [
     "apple", "banana", "cherry", "date", "elephant", "fish", "grape", "honey", "ice", "jungle",
@@ -16,75 +15,63 @@ word_list = [
     "birds", "stars", "ocean", "mountains", "fitness", "business", "finance", "education", "career"
 ]
 
+def type_like_human(text):
+    for char in text:
+        pyautogui.typewrite(char)
+        time.sleep(random.uniform(0.05, 0.2))  # Vary typing speed
+
 def perform_actions():
     pyautogui.hotkey("ctrl", "t")
-    time.sleep(1)
+    time.sleep(random.uniform(0.5, 1.5))
 
-    word1 = random.choice(word_list)
-    word2 = random.choice(word_list)
+    num_words = random.choice([2, 3])
+    words = " ".join(random.sample(word_list, num_words))
 
-    pyautogui.typewrite(f"{word1} {word2}")
-    time.sleep(1)
+    type_like_human(words)
+    time.sleep(random.uniform(0.5, 1.2))  # Pause before pressing enter
 
     pyautogui.press("enter")
-    print(f"Typed words: {word1} {word2} and pressed Enter.")
-
+    print(f"Typed words: {words} and pressed Enter.")
 
 def perform_actions_mobile():
     pyautogui.hotkey("ctrl", "t")
-    time.sleep(1)
+    time.sleep(random.uniform(0.5, 1.5))
     pyautogui.hotkey("ctrl", "l")
-    time.sleep(1)
+    time.sleep(random.uniform(0.3, 0.8))
 
-    word1 = random.choice(word_list)
-    word2 = random.choice(word_list)
+    num_words = random.choice([2, 3])
+    words = " ".join(random.sample(word_list, num_words))
 
-    pyautogui.typewrite(f"{word1} {word2}")
-    time.sleep(1)
+    type_like_human(words)
+    time.sleep(random.uniform(0.5, 1.2))
 
     pyautogui.press("enter")
-    print(f"Typed words: {word1} {word2} and pressed Enter.")
-
-
+    print(f"Typed words: {words} and pressed Enter.")
 
 def edge_main_func(args):
     count = int(args[0]) if args and str(args[0]).isdigit() else 20
     
     switch_window()
-    
     iterations = count  
     
     for i in range(iterations):
         perform_actions()
         print(f"Iteration {i + 1}/{iterations} completed.")
-        time.sleep(4.5)
+        time.sleep(random.uniform(3.5, 5.5))
         pyautogui.hotkey("ctrl", "w")
     
     print("✅ Process completed!")
 
-    
-    switch_window()
-    
-    iterations = count  
-    
-    for i in range(iterations):
-        perform_actions()
-        print(f"Iteration {i + 1}/{iterations} completed.")
-        time.sleep(4.5)
-        pyautogui.hotkey("ctrl", "w")
-    print("Process completed!")
-
-    
 def edgeMobileFun(args):
     count = int(args[0]) if args and str(args[0]).isdigit() else 20
     switch_window()
-    print('this is edge mobile')
+    print('This is edge mobile')
     iterations = count
 
     for i in range(iterations):
         perform_actions_mobile()
         print(f"Iteration {i + 1}/{iterations} completed.")
 
-        time.sleep(5)
+        time.sleep(random.uniform(4, 6))
         pyautogui.hotkey("ctrl", "w")
-    print("Process completed!")
+    print("✅ Mobile process completed!")

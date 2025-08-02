@@ -10,7 +10,8 @@ from .utils.ssh.ssh import main as ssh_command
 from .utils.framework.react import main as setup_reactjs
 from .utils.framework.laravel import main as setup_laravel
 from .utils.search.search import main as google_search
-
+from .utils.find.find import main as find_main
+from .utils.folder.folder import main as folder_main
 # This is all converter imports
 from .utils.converter.webp.webpcon import main as webp_con
 from .utils.converter.avif.avifcon import main as avif_main
@@ -21,7 +22,7 @@ from .utils.convert.convert import main as convert_main
 # from .utils.hacker.hacker import main as hacker_main
 from .utils.pdf.pdf import main as pdf_main
 from .utils.zip.zip import main as zip_main
-VERSION = "0.1.5"
+VERSION = "0.1.6"
 
 commands = {
     "avif": avif_main,
@@ -43,6 +44,10 @@ commands = {
     "pdf":pdf_main,
     "convert":convert_main,
     "zip":zip_main,
+    "find":find_main,
+    "folder":folder_main,
+    "open":folder_main,
+    
 }
 
 

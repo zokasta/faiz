@@ -1,5 +1,7 @@
 import os
 import glob
+import threading
+import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 def human_readable_size(size_bytes):
@@ -21,6 +23,12 @@ def process_file(path, categories):
         if ext in exts:
             return (cat, size, name)
     return ("Other Files", size, name)
+
+def show_progress(progress, stop_event):
+    while not stop_event.is_set():
+        print(f"\r🔄 Files processed: {progress['count']} | Total size: {human_readable_size(progress['size'])}", end='', flush=True)
+        time.sleep(1)
+    print(f"\r✅ Files processed: {progress['count']} | Total size: {human_readable_size(progress['size'])}")
 
 def main(args):
     if not args:
@@ -72,19 +80,32 @@ def main(args):
         folders = [e for e in entries if os.path.isdir(e)]
         folder_count = len(folders)
 
+        progress = {"count": 0, "size": 0}
+        stop_event = threading.Event()
+
         with ThreadPoolExecutor() as executor:
+            if deep_search:
+                progress_thread = threading.Thread(target=show_progress, args=(progress, stop_event))
+                progress_thread.start()
+
             futures = {executor.submit(process_file, path, categories): path for path in files}
             for idx, future in enumerate(as_completed(futures), start=1):
                 try:
                     cat, size, name = future.result()
                     counts[cat] += 1
                     sizes[cat] += size
+                    progress["count"] += 1
+                    progress["size"] += size
                     if show_index:
                         indexed_list.append(f"{idx}. 📄 {name} — {human_readable_size(size)}")
-                except Exception:
+                except:
                     continue
 
-        print(f"📁 Folders: {folder_count}")
+            if deep_search:
+                stop_event.set()
+                progress_thread.join()
+
+        print(f"\n📁 Folders: {folder_count}")
         total_size = sum(sizes.values())
         for cat, num in counts.items():
             size = sizes[cat]
@@ -110,15 +131,29 @@ def main(args):
     folders = [p for p in matching if os.path.isdir(p)]
 
     total_size = 0
+    progress = {"count": 0, "size": 0}
+    stop_event = threading.Event()
+
     with ThreadPoolExecutor() as executor:
+        if deep_search:
+            progress_thread = threading.Thread(target=show_progress, args=(progress, stop_event))
+            progress_thread.start()
+
         futures = {executor.submit(os.path.getsize, f): f for f in files}
         for future in as_completed(futures):
             try:
-                total_size += future.result()
+                size = future.result()
+                total_size += size
+                progress["count"] += 1
+                progress["size"] += size
             except:
                 continue
 
-    print(f"📂 Total matching entries for '{pattern}'{' (deep search)' if deep_search else ''}: {len(matching)}")
+        if deep_search:
+            stop_event.set()
+            progress_thread.join()
+
+    print(f"\n📂 Total matching entries for '{pattern}'{' (deep search)' if deep_search else ''}: {len(matching)}")
     print(f"   - Files:   {len(files)}")
     print(f"   - Folders: {len(folders)}")
     print(f"💾 Total size of matching files: {human_readable_size(total_size)}")

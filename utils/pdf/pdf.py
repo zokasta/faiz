@@ -1,6 +1,6 @@
 import sys
 import signal
-from . import lock, unlock, merge, split, compress, rotate, pagenum
+from . import lock, unlock, merge, split, compress, rotate, pagenum, repair, corrupt
 
 def handle_exit(signum, frame):
     print("\n🚪 Exiting Faiz PDF Suite. Goodbye!")
@@ -23,16 +23,19 @@ Commands:
   🔒 lock <file.pdf> [--password pwd]
   🔓 unlock <file.pdf> [--password pwd]
   📄 merge <in1.pdf> <in2.pdf> ... <out.pdf>
-  ✂️  split <file.pdf>
+  ✂️ split <file.pdf>
   📦 compress <file.pdf> [--output name]
   🔃 rotate <file.pdf> <angle> [--output name]
   🔢 pagenum <file.pdf> [--output name]
+  🛠️ repair <file.pdf>
+  💥 corrupt <file.pdf> [--impossible]
 
 Examples:
   faiz pdf lock secret.pdf
   faiz pdf unlock secret.pdf --password 1234
   faiz pdf merge a.pdf b.pdf output.pdf
   faiz pdf compress large.pdf
+  faiz pdf corrupt file.pdf --impossible
 """)
         return
 
@@ -47,7 +50,12 @@ Examples:
         case 'compress': compress.main(opts)
         case 'rotate': rotate.main(opts)
         case 'pagenum': pagenum.main(opts)
+        case 'repair': repair.main(opts)
+        case 'corrupt':
+            impossible = '--impossible' in opts
+            file = next((f for f in opts if not f.startswith('--')), None)
+            if file:
+                corrupt.corrupt_pdf(file, impossible=impossible)
+            else:
+                print("❗ Usage: corrupt <file.pdf> [--impossible]")
         case _: print(f"❌ Unknown command: {cmd}\nRun `faiz pdf` for help.")
-
-if __name__ == '__main__':
-    main()

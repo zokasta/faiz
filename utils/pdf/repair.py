@@ -1,5 +1,5 @@
 from PyPDF2 import PdfReader, PdfWriter
-from .utils import get_output_path
+from ..convert.utils import get_output_path
 from pathlib import Path
 
 def repair_pdf(file_path):
